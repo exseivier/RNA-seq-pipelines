@@ -108,28 +108,28 @@ fi
 
 # User input for trimmomatic oput files
 # Forward paired
-echo -n "Forward paired trimmomatic output file?: "; read TRIMMED_READS_PAIRED_F
+echo -n "Forward paired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_PAIRED_F
 if [ "$TRIMMED_READS_PAIRED_F" == "" ]; then
 	TRIMMED_READS_PAIRED_F="trimm_pair${READS_F}"
 fi
 echo "I got $TRIMMED_READS_PAIRED_F"
 
 # Forward unpaired
-echo -n "Forward unpaired trimmomatic output file?: "; read TRIMMED_READS_UNPAIRED_F
+echo -n "Forward unpaired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_UNPAIRED_F
 if [ "$TRIMMED_READS_UNPAIRED_F" == "" ]; then
 	TRIMMED_READS_UNPAIRED_F="trimmed_unpair${READS_F}"
 fi
 echo "I got $TRIMMED_READS_UNPAIRED_F"
 
 # Reverse paired
-echo -n "Reverse paired trimmomatic output file?: "; read TRIMMED_READS_PAIRED_R
+echo -n "Reverse paired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_PAIRED_R
 if [ "$TRIMMED_READS_PAIRED_R" == "" ]; then
 	TRIMMED_READS_PAIRED_R="trimm_pair${READS_R}"
 fi
 echo "I got $TRIMMED_READS_PAIRED_R"
 
 # Reverse unpaired
-echo -n "Reverse unpaired trimmomatic output file?: "; read TRIMMED_READS_UNPAIRED_R
+echo -n "Reverse unpaired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_UNPAIRED_R
 if [ "$TRIMMED_READS_UNPAIRED_R" == "" ]; then
 	TRIMMED_READS_UNPAIRED_R="trim_unpair${READS_R}"
 fi
@@ -140,21 +140,21 @@ echo ""
 echo "OUTPUT DATA"
 echo ""
 # User input mapping results path
-echo -n "Mapping results path?: "; read MAPOUT
+echo -n "Mapping results path, [Press ENTER if default]?: "; read MAPOUT
 if [ "$MAPOUT" == "" ]; then
 	MAPOUT="hisat2_out"
 fi
 echo "I got $MAPOUT"
 
 # User input assembly results path
-echo -n "Assembly results path?: "; read ASSEMOUT
+echo -n "Assembly results path, [Press ENTER if default]?: "; read ASSEMOUT
 if [ "$ASSEMOUT" == "" ]; then
 	ASSEMOUT="cl_out"
 fi
 echo "I got $ASSEMOUT"
 
 # User input sam file name
-echo -n "SAM file name?: "; read SAM_FILE
+echo -n "SAM file name, [Press ENTER if default]?: "; read SAM_FILE
 if [ "$SAM_FILE" == "" ]; then
 	SAM_FILE="${PIPELINE_NAME}.sam"
 fi
@@ -200,35 +200,35 @@ echo ""
 echo "PBS SETTINGS"
 echo ""
 #User input number of nodes
-echo -n "Number of nodes?: "; read NUMBER_OF_NODES
+echo -n "Number of nodes, [Press ENTER if default (1)]?: "; read NUMBER_OF_NODES
 if [ "$NUMBER_OF_NODES" == "" ]; then
 	NUMBER_OF_NODES=1
 fi
 echo "I got $NUMBER_OF_NODES nodes"
 
 #User input processors per node
-echo -n "Processors per node?: "; read PROCESSOR_PER_NODE
+echo -n "Processors per node, [Press ENTER if default (1)]?: "; read PROCESSOR_PER_NODE
 if [ "$PROCESSOR_PER_NODE" == "" ]; then
 	PROCESSOR_PER_NODE=1
 fi
 echo "I got $PROCESSOR_PER_NODE processors per node"
 
 #User input queue
-echo -n "Queue name?: "; read QUEUE
+echo -n "Queue name, [Press ENTER if (default)]?: "; read QUEUE
 if [ "$QUEUE" == "" ]; then
 	QUEUE="default"
 fi
 echo "$QUEUE is the name of the queue"
 
 #User input virtual memory
-echo -n "Virtual memory amount in gb?: "; read VIRTUAL_MEMORY
+echo -n "Virtual memory amount in gb, [Press ENTER if default (5gb)]?: "; read VIRTUAL_MEMORY
 if [ "$VIRTUAL_MEMORY" == "" ]; then
 	VIRTUAL_MEMORY=5
 fi
 echo "I got ${VIRTUAL_MEMORY}gb of virtual memory"
 
 #User input memory
-echo -n "Memory amount in gb?: "; read MEMORY
+echo -n "Memory amount in gb, [Press ENTER if default (5gb)]?: "; read MEMORY
 if [ "$MEMORY" == "" ]; then
 	MEMORY=5
 fi
