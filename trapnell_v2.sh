@@ -9,13 +9,20 @@ RNA-Lab (Laboratory 12)
 Langebio Cinvestav
 Irapuato Guanajuato
 
-This script maps reads to a reference genome using hisat2 program,
-then it assembles the reads into a transcriptome and measures the
-level of gene expression using sammtools and cufflinks.
+This script trims and maps reads to a reference genome using hisat2
+program, then it assembles the reads into a transcriptome and
+measures the mRNA abundance by transcript with sammtools and cufflinks.
 
 Pipeline summary
-hisat2 -> samtools[ SAM<=>BAM; sorting; indexing] -> cufflinks
+Trimmomatic -> hisat2 -> samtools[ SAM<=>BAM; sorting; indexing] -> cufflinks
 HEADER_COMMENT
+
+<<TODO
+	o Add Trimmomatic module
+	o Add trimming parameters and instructions
+	o Thinking about how to execute the pipeline
+	  in batch mode
+TODO
 
 <<PBS_SETTINGS
 #PBS -N <str>
@@ -24,7 +31,7 @@ HEADER_COMMENT
 #PBS -q <str>
 PBS_SETTINGS
 
-
+clear
 #User input pipeline name
 echo -n "Pipeline name?: "; read PIPELINE_NAME
 if [ "$PIPELINE_NAME" == "" ]; then
@@ -86,9 +93,9 @@ else
 fi
 
 # User input trimmed forward reads file name
-echo -n "Trimmed forward reads file name?: "; read READS_F
+echo -n "Forward reads file name?: "; read READS_F
 # User input reverse reads file name
-echo -n "Trimmed reverse reads file name?: "; read READS_R
+echo -n "Reverse reads file name?: "; read READS_R
 if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
 	echo "It is needed to specify the name of the reads files!"
 	echo "try again!"
@@ -97,6 +104,37 @@ else
 	echo "I got $READS_F"
 	echo "I got $READS_R"
 fi
+
+
+# User input for trimmomatic oput files
+# Forward paired
+echo -n "Forward paired trimmomatic output file?: "; read TRIMMED_READS_PAIRED_F
+if [ "$TRIMMED_READS_PAIRED_F" == "" ]; then
+	TRIMMED_READS_PAIRED_F="trimm_pair${READS_F}"
+fi
+echo "I got $TRIMMED_READS_PAIRED_F"
+
+# Forward unpaired
+echo -n "Forward unpaired trimmomatic output file?: "; read TRIMMED_READS_UNPAIRED_F
+if [ "$TRIMMED_READS_UNPAIRED_F" == "" ]; then
+	TRIMMED_READS_UNPAIRED_F="trimmed_unpair${READS_F}"
+fi
+echo "I got $TRIMMED_READS_UNPAIRED_F"
+
+# Reverse paired
+echo -n "Reverse paired trimmomatic output file?: "; read TRIMMED_READS_PAIRED_R
+if [ "$TRIMMED_READS_PAIRED_R" == "" ]; then
+	TRIMMED_READS_PAIRED_R="trimm_pair${READS_R}"
+fi
+echo "I got $TRIMMED_READS_PAIRED_R"
+
+# Reverse unpaired
+echo -n "Reverse unpaired trimmomatic output file?: "; read TRIMMED_READS_UNPAIRED_R
+if [ "$TRIMMED_READS_UNPAIRED_R" == "" ]; then
+	TRIMMED_READS_UNPAIRED_R="trim_unpair${READS_R}"
+fi
+echo "I got $TRIMMED_READS_UNPAIRED_R"
+
 
 echo ""
 echo "OUTPUT DATA"
@@ -118,7 +156,7 @@ echo "I got $ASSEMOUT"
 # User input sam file name
 echo -n "SAM file name?: "; read SAM_FILE
 if [ "$SAM_FILE" == "" ]; then
-	SAM_FILE="output.sam"
+	SAM_FILE="${PIPELINE_NAME}.sam"
 fi
 echo "I got $SAM_FILE"
 
@@ -196,10 +234,10 @@ if [ "$MEMORY" == "" ]; then
 fi
 echo "I got ${MEMORY}gb of memory"
 
-<<DEBUG2
+#<<DEBUG2
 echo "echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE"" | bash
 echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE"
-DEBUG2
+#DEBUG2
 
 <<DEBUG1
 echo "
@@ -213,7 +251,7 @@ mkdir $ASSEMOUT" | bash
 DEBUG1
 
 
-#<<MAIN_PROGRAM
+<<MAIN_PROGRAM
 echo "
 # Set working directory to HOME
 cd $CASA
@@ -255,5 +293,5 @@ samtools index $MAPOUT/${SAM_FILE%.*}.sort.bam
 mkdir $ASSEMOUT/${SAM_FILE%.*}
 cufflinks -L $LABEL $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAM_FILE%.*}  $MAPOUT/${SAM_FILE%.*}.sort.bam
 echo "$ASSEMOUT/${SAM_FILE%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE
-#MAIN_PROGRAM
+MAIN_PROGRAM
 #__EOF__//~~CAT
