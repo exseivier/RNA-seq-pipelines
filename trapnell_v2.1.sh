@@ -34,7 +34,7 @@ TODO
 #PBS -q <str>
 PBS_SETTINGS
 
-clear
+
 #########################
 #CHANGE_2: will be erased
 <<CHANGE_2
@@ -158,13 +158,6 @@ else
 	echo $CUFFLINKS_OPTIONAL_PARAMETERS
 fi
 
-#User input LABEL
-echo -n "Label for this work?: "; read LABEL
-if [ "$LABEL" == "" ]; then
-	LABEL="treatment"
-fi
-echo "I got $LABEL"
-
 #User input for question, is there a reference genome index?
 echo -n "Is there a reference genome index [yes|no]?: "; read IS_THERE_A_INDEX
 if [ "$IS_THERE_A_INDEX" == "" ]; then
@@ -246,8 +239,8 @@ echo "
 # Set working directory to HOME
 cd $CASA
 # Creating output directories
-mkdir $MAPOUT
-mkdir $ASSEMOUT
+[ -d $MAPOUT ] || mkdir $MAPOUT
+[ -d $ASSEMOUT ] || mkdir $ASSEMOUT
 # Loading HISAT2
 # Loading samttols
 # Loading cufflinks, cuffmerge and cuffdiff
@@ -281,8 +274,8 @@ samtools index $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
 # Assembling genome and estimating RNA abundances
 # Creating specific output directory
 mkdir $ASSEMOUT/${SAMFILE_NAME%.*}
-cufflinks -L $LABEL $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAMFILE_NAME%.*}  $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
+cufflinks -L ${SAMFILE_NAME%.*} $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAMFILE_NAME%.*}  $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
 echo "$ASSEMOUT/${SAMFILE_NAME%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $SAMFILE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE
 #MAIN_PROGRAM
-done < $1
+done < "$1"
 #__EOF__//~~CAT
