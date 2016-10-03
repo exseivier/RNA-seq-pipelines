@@ -18,8 +18,6 @@ Trimmomatic -> hisat2 -> samtools[ SAM<=>BAM; sorting; indexing] -> cufflinks
 HEADER_COMMENT
 
 <<TODO
-	o Add Trimmomatic module
-	o Add trimming parameters and instructions
 	o Thinking about how to execute the pipeline
 	  in batch mode
 TODO
@@ -104,37 +102,6 @@ else
 	echo "I got $READS_F"
 	echo "I got $READS_R"
 fi
-
-
-# User input for trimmomatic oput files
-# Forward paired
-echo -n "Forward paired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_PAIRED_F
-if [ "$TRIMMED_READS_PAIRED_F" == "" ]; then
-	TRIMMED_READS_PAIRED_F="trimm_pair${READS_F}"
-fi
-echo "I got $TRIMMED_READS_PAIRED_F"
-
-# Forward unpaired
-echo -n "Forward unpaired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_UNPAIRED_F
-if [ "$TRIMMED_READS_UNPAIRED_F" == "" ]; then
-	TRIMMED_READS_UNPAIRED_F="trimmed_unpair${READS_F}"
-fi
-echo "I got $TRIMMED_READS_UNPAIRED_F"
-
-# Reverse paired
-echo -n "Reverse paired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_PAIRED_R
-if [ "$TRIMMED_READS_PAIRED_R" == "" ]; then
-	TRIMMED_READS_PAIRED_R="trimm_pair${READS_R}"
-fi
-echo "I got $TRIMMED_READS_PAIRED_R"
-
-# Reverse unpaired
-echo -n "Reverse unpaired trimmomatic output file, [Press ENTER if default]?: "; read TRIMMED_READS_UNPAIRED_R
-if [ "$TRIMMED_READS_UNPAIRED_R" == "" ]; then
-	TRIMMED_READS_UNPAIRED_R="trim_unpair${READS_R}"
-fi
-echo "I got $TRIMMED_READS_UNPAIRED_R"
-
 
 echo ""
 echo "OUTPUT DATA"
@@ -274,6 +241,19 @@ echo "cufflinks module loaded"
 if [ "$IS_THERE_A_INDEX" == "no" ]; then
 	hisat2-build $GENOMAS/$GENOMA_FASTA_FILE $INDICE/$GENOMA_FASTA_FILE
 fi
+
+# Trimming reads with Trimmomatic
+# Module Trimmomatic-0.32 loading
+module load Trimmomatic/0.32
+# Path to Trimmomatic. It should be modified if the path to Trimmomatic is different
+export TRIMMMO=/data/software/Trimmomatic-0.32
+# Running trimmomartic
+java -jar -Xmx1024m $TRIMMO/trimmomatic-0.32.jar \
+PE \
+$LECTURAS/$READS_F $LECTURAS/$READS_R \
+$TRIMMED_READS_PAIRED_F $TRIMMED_READS_UNPAIRED_F $TRIMMED_READS_PAIRED_R $TRIMMED_READS_UNPAIRED_R \
+ILLUMINACLIP:/data/software/Trimmomatic-0.32/adapters/TruSeq3-PE.fa:2:30:10 \
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
 
 # Mapping reads to reference genome 
 hisat2 -q -x $INDICE/$GENOMA_FASTA_FILE \
