@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-	# User input reads
-	# Trimmomatic parameters
+	# Parsing arguments
 BATCH_PROCESS=""
 SINGLE_PROCESS=""
 COMMFILE=""
-	# qsub settings
+while [[ $# -gt 0 ]];
 do
 	key=$1
-	echo $1 $2
 	case $key in
 		-b|--batch)
 		BATCH_PROCESS="TRUE"
@@ -25,6 +23,61 @@ do
 	esac
 	shift
 done
+
+	# User input data
+echo ""
+echo "User input data"
+echo ""
+echo -n "Home path?: "; read HOME
+echo -n "Adapters file path?: "; read ADAPTERS
+echo -n "Trimmomatic program path?: "; read TRIMMO
+if [ "$HOME" == "" ] || [ "$ADAPTERS" == "" ] || [ "$TRIMMO" == "" ]; then
+	echo "You have to specify the home and other paths"
+	echo "Try again!"
+	exit 1
+fi
+echo ""
+echo "ILLUMINACLIP additional parameters"
+echo ""
+	# ILLUMINACLIP additional parameters
+echo -n "Mismatch allowed?: [default (2)]"; read MISMATCH
+echo -n "Palindrome clip thershold?: [default (15)]"; read PALINDROME_CLIP
+echo -n "Simple clip threshold?: [default (10)]"; read SIMPLE_CLIP
+if [ "$MISMATCH" == "" ]; then
+	MISMATCH=2
+fi
+if [ "$PALINDROME_CLIP" == "" ]; then
+	PALINDROME_CLIP=15
+fi
+if [ "$SIMPLE_CLIP" == "" ]; then
+	SIMPLE_CLIP=10
+fi
+
+	# qsub settings
+echo ""
+echo "QSUB settings"
+echo ""
+echo -n "Number of nodes?: [Press Enter if default (1)]"; read NUMBER_OF_NODES
+echo -n "Processors per node?: [Press ENETR if default (1)]"; read PROCESSORS_PER_NODE
+echo -n "Queue?: [Press ENTER if (default)]"; read QUEUE
+echo -n "Virtual memory?: [Press ENTER if default (5gb)]"; read VIRTUAL_MEMORY
+echo -n "Memory?: [Press ENTER if default (5gb)]"; read MEMORY
+if [ "$NUMBER_OF_NODES" == "" ]; then
+	NUMBER_OF_NODES=1
+fi
+if [ "$PROCESSORS_PER_NODE" == "" ]; then
+	PROCESSORS_PER_NODE=1
+fi
+if [ "$QUEUE" == "" ]; then
+	QUEUE="default"
+fi
+if [ "$VIRTUAL_MEMORY" == "" ]; then
+	VIRTUAL_MEMORY=5
+fi
+if [ "$MEMORY" == "" ]; then
+	MEMORY=5
+fi
+
 echo $BATCH_PROCESS $SINGLE_PROCESS $COMMFILE
 if [ "$BATCH_PROCESS" == "" ] && [ "$SINGLE_PROCESS" == "" ] && [ "$COMMFILE" == "" ]; then
 	echo "Usage:"
@@ -40,7 +93,7 @@ if [ "$BATCH_PROCESS" == "TRUE" ] && [ "$COMMFILE" == "" ]; then
 	echo "trimmiando.sh -b -c <command file name>"
 	echo "Try again!"
 fi
-
+	# Running Trimmomatic in SINGLE mode
 if [ "$BATCH_PROCESS" == "FALSE" ] && [ "$SINGLE_PROCESS" == "TRUE" ]; then
 	echo -n "Name process?: "; read NAME
 	if [ "$NAME" == "" ]; then
@@ -64,24 +117,25 @@ if [ "$BATCH_PROCESS" == "FALSE" ] && [ "$SINGLE_PROCESS" == "TRUE" ]; then
 	else
 		echo "I got $TRIMMOMATIC_OPTIONS"
 	fi
-		# Running Trimmomatic in SINGLE PROCESS
 	echo "
 # Module Trimmomatic-0.32 loading
 module load Trimmomatic/0.32
 # Setting working directory
-cd /LUSTRE/usuario/montalvo/sra/
+cd $HOME
 # Path to Trimmomatic
-TRIMMO=/data/software/Trimmomatic-0.32
+#TRIMMO=/data/software/Trimmomatic-0.32
 # Running Trimmomatic
 java -jar -Xmx1024m $TRIMMO/trimmomatic-0.32.jar \
 PE \
 $READS_F $READS_R \
 trim${READS_F%.fastq.gz}_P.fastq.gz trim${READS_F%.fastq.gz}_U.fastq.gz \
 trim${READS_R%.fastq.gz}_P.fastq.gz trim${READS_R%.fastq.gz}_U.fastq.gz \
-$TRIMMOMATIC_OPTIONS" | qsub -N $NAME \
--l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
--V -q $QUEUE
+ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
+$TRIMMOMATIC_OPTIONS" #| qsub -N $NAME \
+#-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
+#-V -q $QUEUE
 	
+	# Running Trimmomatic in BATCH mode
 elif [ "$BATCH_PROCESS" == "TRUE" ] && [ "$SINGLE_PROCESS" == "FALSE" ]; then
 while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
 		arrLINE=(${LINE//"|"/ })
@@ -101,23 +155,23 @@ while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
 		fi
 		echo "I got $READS_F and $READS_R"
 		echo "I got $TRIMMOMATIC_OPTIONS"
-			# Running Trimmomatic in BATCH PROCESS
 		echo "
 # Module Trimmomatic-0.32 loading
 module load Trimmomatic/0.32
 # Setting working directory
-cd /LUSTRE/usuario/montalvo/sra/
+cd $HOME
 # Path to Trimmomatic
-TRIMMO=/data/software/Trimmomatic-0.32
+#TRIMMO=/data/software/Trimmomatic-0.32
 # Running Trimmomatic
 java -jar -Xmx1024m $TRIMMO/trimmomatic-0.32.jar \
 PE \
 $READS_F $READS_R \
 trim${READS_F%.fastq.gz}_P.fastq.gz trim${READS_F%.fastq.gz}_U.fastq.gz \
 trim${READS_R%.fastq.gz}_P.fastq.gz trim${READS_R%.fastq.gz}_U.fastq.gz \
-$TRIMMOMATIC_OPTIONS" | qsub -N $NAME \
--l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
--V -q $QUEUE
+ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
+$TRIMMOMATIC_OPTIONS" #| qsub -N $NAME \
+#-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
+#-V -q $QUEUE
 	done < "$COMMFILE"
 fi
 
