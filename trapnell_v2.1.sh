@@ -22,6 +22,31 @@ do
 done
 HEADER_COMMENT
 
+<<TODO
+	o Thinking about how to execute the pipeline
+	  in batch mode
+TODO
+
+<<PBS_SETTINGS
+#PBS -N <str>
+#PBS -l nodes=<int>:ppn=<int>,vmem=<int>gb,mem=<int>gb
+#PBS -V
+#PBS -q <str>
+PBS_SETTINGS
+
+
+#########################
+#CHANGE_2: will be erased
+<<CHANGE_2
+#User input pipeline name
+echo -n "Pipeline name?: "; read PIPELINE_NAME
+if [ "$PIPELINE_NAME" == "" ]; then
+	PIPELINE_NAME="default"
+fi
+echo "I got $PIPELINE_NAME"
+CHANGE_2
+########################
+
 echo ""
 echo "INPUT DATA"
 echo ""
@@ -75,6 +100,25 @@ else
 	echo "I got $LECTURAS"
 fi
 
+#####################################
+# CHANGE_1: will be erased
+<<CHANGE_1
+# User input trimmed forward reads file name
+echo -n "Forward reads file name?: "; read READS_F
+# User input reverse reads file name
+echo -n "Reverse reads file name?: "; read READS_R
+if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
+	echo "It is needed to specify the name of the reads files!"
+	echo "try again!"
+	exit 1
+else
+	echo "I got $READS_F"
+	echo "I got $READS_R"
+fi
+CHANGE_1
+#####################################
+
+
 echo ""
 echo "OUTPUT DATA"
 echo ""
@@ -116,10 +160,10 @@ fi
 
 #User input for question, is there a reference genome index?
 echo -n "Is there a reference genome index [yes|no]?: "; read IS_THERE_A_INDEX
-if [ "$IS_THERE_AN_INDEX" == "" ]; then
-	IS_THERE_AN_INDEX="no"
+if [ "$IS_THERE_A_INDEX" == "" ]; then
+	IS_THERE_A_INDEX="no"
 fi
-echo "$IS_THERE_AN_INDEX, I have a reference genome"
+echo "$IS_THERE_A_INDEX, I have a reference genome"
 
 echo ""
 echo "PBS SETTINGS"
@@ -159,6 +203,11 @@ if [ "$MEMORY" == "" ]; then
 fi
 echo "I got ${MEMORY}gb of memory"
 
+#<<DEBUG2
+echo "echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE"" | bash
+echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE"
+#DEBUG2
+
 <<DEBUG1
 echo "
 # This is a comment
@@ -170,12 +219,6 @@ mkdir $MAPOUT
 mkdir $ASSEMOUT" | bash
 DEBUG1
 
-#<<DEBUG2
-echo "qsub -N $PIPELINE_NAME \
--l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
--V -q $QUEUE"
-#DEBUG2
-
 while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
 arrLINE=(${LINE//"|"/ })
 SAMFILE_NAME=${arrLINE[0]}
@@ -185,7 +228,7 @@ fi
 READS_F=${arrLINE[1]}
 READS_R=${arrLINE[2]}
 if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
-	echo "You have to specify the forward and reverse reads files"
+	echo "You have to specify the forward and reverse reads file"
 	echo "Try again!"
 	exit 1
 fi
@@ -211,7 +254,7 @@ module load cufflinks/2.2.1
 echo "cufflinks module loaded"
 
 # Creating reference genome index. If index is not created
-if [ "$IS_THERE_AN_INDEX" == "no" ]; then
+if [ "$IS_THERE_A_INDEX" == "no" ]; then
 	hisat2-build $GENOMAS/$GENOMA_FASTA_FILE $INDICE/$GENOMA_FASTA_FILE
 fi
 

@@ -131,9 +131,9 @@ $READS_F $READS_R \
 trim${READS_F%.fastq.gz}_P.fastq.gz trim${READS_F%.fastq.gz}_U.fastq.gz \
 trim${READS_R%.fastq.gz}_P.fastq.gz trim${READS_R%.fastq.gz}_U.fastq.gz \
 ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
-$TRIMMOMATIC_OPTIONS" #| qsub -N $NAME \
-#-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
-#-V -q $QUEUE
+$TRIMMOMATIC_OPTIONS" | qsub -N $NAME \
+-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
+-V -q $QUEUE
 	
 	# Running Trimmomatic in BATCH mode
 elif [ "$BATCH_PROCESS" == "TRUE" ] && [ "$SINGLE_PROCESS" == "FALSE" ]; then
@@ -169,9 +169,9 @@ $READS_F $READS_R \
 trim${READS_F%.fastq.gz}_P.fastq.gz trim${READS_F%.fastq.gz}_U.fastq.gz \
 trim${READS_R%.fastq.gz}_P.fastq.gz trim${READS_R%.fastq.gz}_U.fastq.gz \
 ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
-$TRIMMOMATIC_OPTIONS" #| qsub -N $NAME \
-#-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
-#-V -q $QUEUE
+$TRIMMOMATIC_OPTIONS" | qsub -N $NAME \
+-l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
+-V -q $QUEUE
 	done < "$COMMFILE"
 fi
 
