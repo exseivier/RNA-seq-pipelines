@@ -214,7 +214,7 @@ echo "
 echo "Hello world!"
 echo "This is not a comment!"
 #This is another comment!
-cd $CASA
+cd $PRWD
 mkdir $MAPOUT
 mkdir $ASSEMOUT" | bash
 DEBUG1
@@ -255,17 +255,17 @@ echo "cufflinks module loaded"
 
 # Creating reference genome index. If index is not created
 if [ "$IS_THERE_A_INDEX" == "no" ]; then
-	hisat2-build $GENOMAS/$GENOMA_FASTA_FILE $INDICE/$GENOMA_FASTA_FILE
+	hisat2-build $GENOMES/$REFGENOME $INDEX/$REFGENOME
 fi
 
 # Mapping reads to reference genome 
-hisat2 -q -x $INDICE/$GENOMA_FASTA_FILE \
+hisat2 -q -x $INDEX/$REFGENOME \
 $HISAT2_OPTIONAL_PARAMETERS \
--1 $LECTURAS/$READS_F -2 $LECTURAS/$READS_R \
+-1 $READS/$READS_F -2 $READS/$READS_R \
 -S $MAPOUT/$SAMFILE_NAME
 
 # SAM <=> BAM
-samtools view -bT $GENOMAS/$GENOMA_FASTA_FILE $MAPOUT/$SAMFILE_NAME > $MAPOUT/${SAMFILE_NAME%.*}.bam
+samtools view -bT $GENOMES/$REFGENOME $MAPOUT/$SAMFILE_NAME > $MAPOUT/${SAMFILE_NAME%.*}.bam
 # Sorting BAM
 samtools sort $MAPOUT/${SAMFILE_NAME%.*}.bam -o $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
 # Indexing BAM
@@ -277,5 +277,5 @@ mkdir $ASSEMOUT/${SAMFILE_NAME%.*}
 cufflinks -L ${SAMFILE_NAME%.*} $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAMFILE_NAME%.*}  $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
 echo "$ASSEMOUT/${SAMFILE_NAME%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $SAMFILE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE
 #MAIN_PROGRAM
-done < "$1"
+done < $COMMANDS/$COMMAND_FILE
 #__EOF__//~~CAT

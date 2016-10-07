@@ -28,14 +28,14 @@ do
 		-c)
 		COMMANDS=$value
 		;;
+		-cf)
+		COMMAND_FILE=$value
+		;;
 		-s)
 		SRAFILES=$value
 		;;
-		-tr)
-		TRIMMING_COMMANDS=$value
-		;;
-		-a)
-		PIPELINE_COMMANDS=$value
+		-tf)
+		TRANSCRIPTOME_FILE=$value
 		;;
 		*)
 		echo "Bad option"
@@ -58,7 +58,9 @@ export TRANSCRIPTOMES=$TRANSCRIPTOMES
 export REFGENOME=$REFGENOME
 export COMMANDS=$COMMANDS
 export SRAFILES=$SRAFILES
-export TRIMMING_COMMANDS=$TRIMMING_COMMANDS
-export PIPELINE_COMMANDS=$PIPELINE_COMMANDS
+export COMMAND_FILE=$COMMAND_FILE
+export TRANSCRIPTOME_FILE=$TRANSCRIPTOME_FILE
 echo ""
 echo "Variables were exported! Have a nice work!..."
+
+#__EOF__//~~CAT

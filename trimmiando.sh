@@ -28,7 +28,6 @@ done
 echo ""
 echo "User input data"
 echo ""
-echo -n "Home path?: "; read HOME
 echo -n "Adapters file path?: "; read ADAPTERS
 echo -n "Trimmomatic program path?: "; read TRIMMO
 if [ "$HOME" == "" ] || [ "$ADAPTERS" == "" ] || [ "$TRIMMO" == "" ]; then
@@ -121,7 +120,7 @@ if [ "$BATCH_PROCESS" == "FALSE" ] && [ "$SINGLE_PROCESS" == "TRUE" ]; then
 # Module Trimmomatic-0.32 loading
 module load Trimmomatic/0.32
 # Setting working directory
-cd $HOME
+cd $PRWD/$READS
 # Path to Trimmomatic
 #TRIMMO=/data/software/Trimmomatic-0.32
 # Running Trimmomatic
@@ -159,19 +158,19 @@ while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
 # Module Trimmomatic-0.32 loading
 module load Trimmomatic/0.32
 # Setting working directory
-cd $HOME
+cd $PRWD
 # Path to Trimmomatic
 #TRIMMO=/data/software/Trimmomatic-0.32
 # Running Trimmomatic
 java -jar -Xmx1024m $TRIMMO/trimmomatic-0.32.jar \
 PE \
-$READS_F $READS_R \
-trim${READS_F%.fastq.gz}_P.fastq.gz trim${READS_F%.fastq.gz}_U.fastq.gz \
-trim${READS_R%.fastq.gz}_P.fastq.gz trim${READS_R%.fastq.gz}_U.fastq.gz \
+$READS/$READS_F $READS/$READS_R \
+$READS/trim${READS_F%.fastq.gz}_P.fastq.gz $READS/trim${READS_F%.fastq.gz}_U.fastq.gz \
+$READS/trim${READS_R%.fastq.gz}_P.fastq.gz $READS/trim${READS_R%.fastq.gz}_U.fastq.gz \
 ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
-$TRIMMOMATIC_OPTIONS" | qsub -N $NAME \
+$TRIMMOMATIC_OPTIONS" | qsub -N ${NAME%.sam} \
 -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
 -V -q $QUEUE
-	done < "$COMMFILE"
+	done < "$COMMAND_FILE/$COMMAND_FILE"
 fi
 
