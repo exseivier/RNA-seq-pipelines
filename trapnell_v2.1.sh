@@ -47,6 +47,8 @@ echo "I got $PIPELINE_NAME"
 CHANGE_2
 ########################
 
+#######################
+<<CHANGE_3
 echo ""
 echo "INPUT DATA"
 echo ""
@@ -99,6 +101,8 @@ if [ "$LECTURAS" == "" ]; then
 else
 	echo "I got $LECTURAS"
 fi
+CHANGE_3
+#####################################
 
 #####################################
 # CHANGE_1: will be erased
@@ -140,6 +144,10 @@ echo ""
 echo "OPTIONAL PARAMETERS"
 echo ""
 
+
+##################################
+#CHANGE_4
+<<CHANGE_4
 #User input hisat2 optional parameters
 echo -n "Hisat2 optional parameters, [Press ENTER if default]?: "; read HISAT2_OPTIONAL_PARAMETERS
 if [ "$HISAT2_OPTIONAL_PARAMETERS" == "" ]; then
@@ -157,6 +165,8 @@ else
 	echo "Cufflinks optional parameters are:"
 	echo $CUFFLINKS_OPTIONAL_PARAMETERS
 fi
+CHANGE_4
+#########################################
 
 #User input for question, is there a reference genome index?
 echo -n "Is there a reference genome index [yes|no]?: "; read IS_THERE_A_INDEX
@@ -227,20 +237,24 @@ if [ "$SAMFILE_NAME" == "" ]; then
 fi
 READS_F=${arrLINE[1]}
 READS_R=${arrLINE[2]}
+HISAT2_OPTIONAL_PARAMETERS=${arrLINE[3]}
+CUFFLINKS_OPTIONAL_PARAMETERS=${arrLINE[4]}
 if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
 	echo "You have to specify the forward and reverse reads file"
 	echo "Try again!"
 	exit 1
 fi
 echo "Name $SAMFILE_NAME; reads forward $READS_F; reads reverse $READS_R"
+cd $PRWD
+[ -d $MAPOUT ] || mkdir $MAPOUT
+[ -d $ASSEMOUT ] || mkdir $ASSEMOUT
+export MAPOUT=$MAPOUT
+export ASSEMOUT=$ASSEMOUT
 
 #<<MAIN_PROGRAM
 echo "
 # Set working directory to HOME
-cd $CASA
-# Creating output directories
-[ -d $MAPOUT ] || mkdir $MAPOUT
-[ -d $ASSEMOUT ] || mkdir $ASSEMOUT
+cd $PRWD
 # Loading HISAT2
 # Loading samttols
 # Loading cufflinks, cuffmerge and cuffdiff
@@ -277,5 +291,5 @@ mkdir $ASSEMOUT/${SAMFILE_NAME%.*}
 cufflinks -L ${SAMFILE_NAME%.*} $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAMFILE_NAME%.*}  $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
 echo "$ASSEMOUT/${SAMFILE_NAME%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $SAMFILE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE
 #MAIN_PROGRAM
-done < $COMMANDS/$COMMAND_FILE
+done < $COMMANDS/$MAPPING_ASSEMBLY_COMMANDS
 #__EOF__//~~CAT

@@ -40,9 +40,6 @@ fastq-dump --outdir $PRWD/$READS \
 --split-files \
 $OPTIONAL_PARAMETERS \
 ${arrLINE[0]}" | qsub -N ${arrLINE[0]%.sra} -l nodes=$NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE
-
-#files=$(ls $READS/${arrLINE[0]%.sra}_*.* | tr "\n" "|" | sed 's/sra\///g')
-#echo "${arrLINE[0]%.sra}.sam|${files}" >> $COMMANDS/$TRIMMING_COMMANDS" 
 #MAIN_PRPGRAM
 
 done < $READS/$SRAFILES

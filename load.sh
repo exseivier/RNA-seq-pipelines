@@ -28,8 +28,14 @@ do
 		-c)
 		COMMANDS=$value
 		;;
-		-cf)
+		-tc)
 		COMMAND_FILE=$value
+		;;
+		-mac)
+		MAPPING_ASSEMBLY_COMMANDS=$value
+		;;
+		-dec)
+		DIFFEXP_COMMANDS=$value
 		;;
 		-s)
 		SRAFILES=$value
@@ -59,6 +65,8 @@ export REFGENOME=$REFGENOME
 export COMMANDS=$COMMANDS
 export SRAFILES=$SRAFILES
 export COMMAND_FILE=$COMMAND_FILE
+export MAPPING_ASSEMBLY_COMMANDS=$MAPPING_ASSEMBLY_COMMANDS
+export DIFFEXP_COMMANDS=$DIFFEXP_COMMANDS
 export TRANSCRIPTOME_FILE=$TRANSCRIPTOME_FILE
 echo ""
 echo "Variables were exported! Have a nice work!..."

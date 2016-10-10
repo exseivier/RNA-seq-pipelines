@@ -6,7 +6,7 @@ echo -n "Processor per node?: "; read PPN; if [ "$PPN" == "" ]; then PPN=1; fi
 echo -n "Virtual memory?: "; read VIRTUAL_MEMORY; if [ "$VIRTUAL_MEMORY" == "" ]; then VIRTUAL_MEMORY=5; fi
 echo -n "Memory?: "; read MEMORY; if [ "$MEMORY" == "" ]; then MEMORY=5; fi
 echo -n "Queue?: "; read QUEUE; if [ "$QUEUE" == "" ]; then QUEUE="default"; fi
-
+cd $PRWD/$READS
 for file in $PATTERN;
 do
 	echo "cd $PRWD/$READS; module load FastQC/0.11.2; fastqc $file" \

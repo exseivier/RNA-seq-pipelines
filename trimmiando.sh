@@ -30,8 +30,8 @@ echo "User input data"
 echo ""
 echo -n "Adapters file path?: "; read ADAPTERS
 echo -n "Trimmomatic program path?: "; read TRIMMO
-if [ "$HOME" == "" ] || [ "$ADAPTERS" == "" ] || [ "$TRIMMO" == "" ]; then
-	echo "You have to specify the home and other paths"
+if [ "$ADAPTERS" == "" ] || [ "$TRIMMO" == "" ]; then
+	echo "You have to specify those paths"
 	echo "Try again!"
 	exit 1
 fi
@@ -78,7 +78,7 @@ if [ "$MEMORY" == "" ]; then
 fi
 
 echo $BATCH_PROCESS $SINGLE_PROCESS $COMMFILE
-if [ "$BATCH_PROCESS" == "" ] && [ "$SINGLE_PROCESS" == "" ] && [ "$COMMFILE" == "" ]; then
+if [ "$BATCH_PROCESS" == "" ] && [ "$SINGLE_PROCESS" == "" ]; then
 	echo "Usage:"
 	echo "trimiando.sh [options]: [-b|-s] -c  <command file name>"
 	echo "Options:"
@@ -87,11 +87,7 @@ if [ "$BATCH_PROCESS" == "" ] && [ "$SINGLE_PROCESS" == "" ] && [ "$COMMFILE" ==
 	echo "	-c|--commfile: The command file name (this field is needed)"
 	exit 1
 fi
-if [ "$BATCH_PROCESS" == "TRUE" ] && [ "$COMMFILE" == "" ]; then
-	echo "You have to specify the command file:"
-	echo "trimmiando.sh -b -c <command file name>"
-	echo "Try again!"
-fi
+
 	# Running Trimmomatic in SINGLE mode
 if [ "$BATCH_PROCESS" == "FALSE" ] && [ "$SINGLE_PROCESS" == "TRUE" ]; then
 	echo -n "Name process?: "; read NAME
@@ -167,10 +163,10 @@ PE \
 $READS/$READS_F $READS/$READS_R \
 $READS/trim${READS_F%.fastq.gz}_P.fastq.gz $READS/trim${READS_F%.fastq.gz}_U.fastq.gz \
 $READS/trim${READS_R%.fastq.gz}_P.fastq.gz $READS/trim${READS_R%.fastq.gz}_U.fastq.gz \
-ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP
+ILLUMINACLIP:$ADAPTERS:$MISMATCH:$PALINDROME_CLIP:$SIMPLE_CLIP \
 $TRIMMOMATIC_OPTIONS" | qsub -N ${NAME%.sam} \
 -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSORS_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb \
 -V -q $QUEUE
-	done < "$COMMAND_FILE/$COMMAND_FILE"
+	done < "$COMMANDS/$COMMAND_FILE"
 fi
 
