@@ -1,0 +1,2 @@
+SRR1598911.sam|SRR1598911_1_P.fastq.gz|SRR1598911_2_P.fastq.gz
+SRR1598913.sam|SRR1598913_1_P.fastq.gz|SRR1598913_2_P.fastq.gz
