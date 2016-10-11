@@ -16,112 +16,11 @@ This version (2.1) of the script supports the batch processing of fastq
 files
 
 Pipeline summary
-For every pair of reads;
+For every pair of reads: Fwd and Rev;
 do
 	hisat2 -> samtools[ SAM<=>BAM; sorting; indexing] -> cufflinks
 done
 HEADER_COMMENT
-
-<<TODO
-	o Thinking about how to execute the pipeline
-	  in batch mode
-TODO
-
-<<PBS_SETTINGS
-#PBS -N <str>
-#PBS -l nodes=<int>:ppn=<int>,vmem=<int>gb,mem=<int>gb
-#PBS -V
-#PBS -q <str>
-PBS_SETTINGS
-
-
-#########################
-#CHANGE_2: will be erased
-<<CHANGE_2
-#User input pipeline name
-echo -n "Pipeline name?: "; read PIPELINE_NAME
-if [ "$PIPELINE_NAME" == "" ]; then
-	PIPELINE_NAME="default"
-fi
-echo "I got $PIPELINE_NAME"
-CHANGE_2
-########################
-
-#######################
-<<CHANGE_3
-echo ""
-echo "INPUT DATA"
-echo ""
-# User input HOME path
-echo -n "Home path?: "; read CASA
-if [ "$CASA" == "" ]; then
-	echo "It is important to sepcify the HOME path!"
-	echo "Try again!"
-	exit 1
-else
-	echo "I got $CASA"
-fi
-
-# User input GENOMES path
-echo -n "Genomes path?: "; read GENOMAS
-if [ "$GENOMAS" == "" ]; then
-	echo "You have to specify the GENOMES path!"
-	echo "Try again!"
-	exit 1
-else
-	echo "I got $GENOMAS"
-fi
-
-# User input INDEX path
-echo -n "Index path?: "; read INDICE
-if [ "$INDICE" == "" ]; then
-	echo "You have to specify the INDEX path!"
-	echo "Try again!"
-	exit 1
-else
-	echo "I got $INDICE"
-fi
-
-# User input genoma fasta file name
-echo -n "Genoma fasta file name?: "; read GENOMA_FASTA_FILE
-if [ "$GENOMA_FASTA_FILE" == "" ]; then
-	echo "I do not know what is the genome fasta file name!"
-	echo "Try again!"
-	exit 1
-else
-	echo "I got $GENOMA_FASTA_FILE"
-fi
-
-# User input READS path
-echo -n "Reads path?: "; read LECTURAS
-if [ "$LECTURAS" == "" ]; then
-	echo "I do not know where the reads are!"
-	echo "Would you like to tell me?"
-	exit 1
-else
-	echo "I got $LECTURAS"
-fi
-CHANGE_3
-#####################################
-
-#####################################
-# CHANGE_1: will be erased
-<<CHANGE_1
-# User input trimmed forward reads file name
-echo -n "Forward reads file name?: "; read READS_F
-# User input reverse reads file name
-echo -n "Reverse reads file name?: "; read READS_R
-if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
-	echo "It is needed to specify the name of the reads files!"
-	echo "try again!"
-	exit 1
-else
-	echo "I got $READS_F"
-	echo "I got $READS_R"
-fi
-CHANGE_1
-#####################################
-
 
 echo ""
 echo "OUTPUT DATA"
@@ -130,6 +29,8 @@ echo ""
 echo -n "Mapping results path, [Press ENTER if default]?: "; read MAPOUT
 if [ "$MAPOUT" == "" ]; then
 	MAPOUT="hisat2_out"
+	export MAPOUT=$MAPOUT
+	[ -d $MAPOUT ] || mkdir $MAPOUT
 fi
 echo "I got $MAPOUT"
 
@@ -137,36 +38,11 @@ echo "I got $MAPOUT"
 echo -n "Assembly results path, [Press ENTER if default]?: "; read ASSEMOUT
 if [ "$ASSEMOUT" == "" ]; then
 	ASSEMOUT="cl_out"
+	export ASSEMOUT=$ASSEMOUT
+	[ -d $ASSEMOUT ] || mkdir $ASSEMOUT
 fi
 echo "I got $ASSEMOUT"
 
-echo ""
-echo "OPTIONAL PARAMETERS"
-echo ""
-
-
-##################################
-#CHANGE_4
-<<CHANGE_4
-#User input hisat2 optional parameters
-echo -n "Hisat2 optional parameters, [Press ENTER if default]?: "; read HISAT2_OPTIONAL_PARAMETERS
-if [ "$HISAT2_OPTIONAL_PARAMETERS" == "" ]; then
-	echo "Hisat2 optional parameters were set as default!"
-else
-	echo "Hisat2 optional parameters are:"
-	echo $HISAT2_OPTIONAL_PARAMETERS
-fi
-
-#User input cufflinks optional parameters
-echo -n "Cufflinks optional parameters, [Press ENTER if default]?: "; read CUFFLINKS_OPTIONAL_PARAMETERS
-if [ "$CUFFLINKS_OPTIONAL_PARAMETERS" == "" ]; then
-	echo "Cufflinks optional parameters were set as default!"
-else
-	echo "Cufflinks optional parameters are:"
-	echo $CUFFLINKS_OPTIONAL_PARAMETERS
-fi
-CHANGE_4
-#########################################
 
 #User input for question, is there a reference genome index?
 echo -n "Is there a reference genome index [yes|no]?: "; read IS_THERE_A_INDEX
@@ -218,16 +94,6 @@ echo "echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_
 echo "qsub -N $PIPELINE_NAME -l nodes=$NUMBER_OF_NODES:ppn=$PROCESSOR_PER_NODE,vmem=${VIRTUAL_MEMORY}gb,mem=${MEMORY}gb -V -q $QUEUE"
 #DEBUG2
 
-<<DEBUG1
-echo "
-# This is a comment
-echo "Hello world!"
-echo "This is not a comment!"
-#This is another comment!
-cd $PRWD
-mkdir $MAPOUT
-mkdir $ASSEMOUT" | bash
-DEBUG1
 
 while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
 arrLINE=(${LINE//"|"/ })
@@ -246,10 +112,6 @@ if [ "$READS_F" == "" ] || [ "$READS_R" == "" ]; then
 fi
 echo "Name $SAMFILE_NAME; reads forward $READS_F; reads reverse $READS_R"
 cd $PRWD
-[ -d $MAPOUT ] || mkdir $MAPOUT
-[ -d $ASSEMOUT ] || mkdir $ASSEMOUT
-export MAPOUT=$MAPOUT
-export ASSEMOUT=$ASSEMOUT
 
 #<<MAIN_PROGRAM
 echo "
