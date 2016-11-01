@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-
+clear
+echo ""
+echo "Loading $1 project file..."
+echo ""
 while IFS='' read -r LINE || [[ -n $LINE ]];
 do
 	echo $LINE
@@ -64,6 +67,12 @@ do
 		--cd-out)
 		CUFFDIFF_OUT=$value
 		;;
+		-ko)
+		KALL_OUT=$value
+		;;
+		-kc)
+		KALLISTO_CMD=$value
+		;;
 		*)
 		echo "Bad option"
 		;;
@@ -71,11 +80,12 @@ do
 	shift
 done < $1
 
+echo "Exporting variables..."
 export PRWD=$PRWD; [ -d $PRWD ] || mkdir $PRWD
 export INDEX=$INDEX; [ -d $PRWD/$INDEX ] || mkdir $PRWD/$INDEX
 export READS=$READS; [ -d $PRWD/$READS ] || mkdir $PRWD/$READS
 export GENOMES=$GENOMES; [ -d $PRWD/$GENOMES ] || mkdir $PRWD/$GENOMES
-export TRANSCRIPTOMES=$TRANSCRIPTOMES
+export TRANSCRIPTOMES=$TRANSCRIPTOMES; [ -d $PRWD/$TRANSCRIPTOMES ] || mkdir $PRWD/$TRANSCRIPTOMES
 export REFGENOME=$REFGENOME
 export COMMANDS=$COMMANDS; [ -d $PRWD/$COMMANDS ] || mkdir $PRWD/$COMMANDS
 export SRAFILES=$SRAFILES; [ -f $PRWD/$READS/$SRAFILES ] || touch $PRWD/$READS/$SRAFILES
@@ -90,15 +100,12 @@ export MAPOUT=$MAPOUT; [ -d $PRWD/$MAPOUT ] || mkdir $PRWD/$MAPOUT
 export ASSEMOUT=$ASSEMOUT; [ -d $PRWD/$ASSEMOUT ] || mkdir $PRWD/$ASSEMOUT
 export CUFFMERGE_OUT=$CUFFMERGE_OUT; [ -d $PRWD/$CUFFMERGE_OUT ] || mkdir $PRWD/$CUFFMERGE_OUT
 export CUFFDIFF_OUT=$CUFFDIFF_OUT; [ -d $PRWD/$CUFFDIFF_OUT ] || mkdir $PRWD/$CUFFDIFF_OUT
-
-echo $PRWD $INDEX $GENOMES $REFGENOME $TRANSCRIPTOMES $COMMANDS $READS $SRAFILES $TRIMMING_COMMANDS $PIPELINE_COMMANDS
-echo "Redirecting..."
+export KALL_OUT=$KALL_OUT; [ -d $PRWD/$KALL_OUT ] || mkdir $PRWD/$KALL_OUT
+export KALLISTO_CMD=$KALLISTO_CMD
+echo "Variables were exported..."
+echo "Redirecting to $PRWD"
 cd $PRWD
-echo "You have been redirected to $PRWD"
+echo "Success! You have been redirected to $PRWD"
 echo ""
-echo "Exporting variables"
-
-echo ""
-echo "Variables were exported! Have a nice work!..."
 
 #__EOF__//~~CAT

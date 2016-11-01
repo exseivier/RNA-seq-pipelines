@@ -39,7 +39,7 @@ else
 fi
 # Processing files
 if [ "$ARE_READS_MAPPED" == "no" ]; then
-
+hisat2_job=""
 while IFS='' read -r LINE || [[ -n "$LINE" ]];
 do
 arrLINE=(${LINE//"|"/ })
@@ -70,7 +70,6 @@ echo "Name $SAMFILE_NAME; reads forward $READS_F; reads reverse $READS_R"
 DEBUG
 ###########################################################################
 
-hisat2_job=""
 tjob=$(echo "
 # Set working directory to HOME
 cd $PRWD
@@ -109,6 +108,13 @@ fi
 #         &         @
 #    CUFFCOMPARE    @
 ####################@
+
+if [ "$hisat2_job" == "" ]; then
+	DEPENDENCY=""
+else
+	DEPENDENCY="-W depend=afterok:$hisat2_job"
+fi
+
 tjob=""
 cufflinks_job=""
 
@@ -123,13 +129,13 @@ READS_F=${arrLINE[1]}
 READS_R=${arrLINE[2]}
 CUFFLINKS_OPTIONAL_PARAMETERS=$(echo ${arrLINE[4]} | sed 's/;/ /g')
 
-echo "
+tjob=$(echo "
 cd $PRWD
 module load cufflinks/2.2.1
 echo "cufflinks module loaded"
 mkdir $ASSEMOUT/${SAMFILE_NAME%.*}
 cufflinks -L ${SAMFILE_NAME%.*} $CUFFLINKS_OPTIONAL_PARAMETERS  -o $ASSEMOUT/${SAMFILE_NAME%.*}  $MAPOUT/${SAMFILE_NAME%.*}.sort.bam
-echo "$ASSEMOUT/${SAMFILE_NAME%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $SAMFILE_NAME -l nodes=1:ppn=8,vmem=10gb,mem=10gb -W depend=afterok:$hisat2_job -V -q default
+echo "$ASSEMOUT/${SAMFILE_NAME%.*}/transcripts.gtf" >> $ASSEMOUT/GTFs.txt" | qsub -N $SAMFILE_NAME -l nodes=1:ppn=8,vmem=10gb,mem=10gb $DEPENDENCY -V -q default)
 if [ "$cufflinks_job" == "" ]; then
 	cufflinks_job=$tjob
 else
@@ -155,10 +161,11 @@ do
 module load cufflinks/2.2.1
 cd $PRWD
 mkdir $PRWD/$CUFFCOMPARE_OUT/${SAMFILE_NAME%.*}
-
 cuffcompare -r $PRWD/$TRANSCRIPTOMES/$TRANSCRIPTOME_FILE \
 $CUFFCOMPARE_OPTIONAL_PARAMETERS \
--i $ASSEMOUT/GTFs.txt" | \
+-i $PRWD/$ASSEMOUT/GTFs.txt
+
+mv cuffcmp.* $PRWD/$CUFFCOMPARE_OUT/${SAMFILE_NAME%.*}" | \
 qsub -N ${SAMFILE_NAME%.*}_ensam -l nodes=1:ppn=8,vmem=10gb,mem=10gb -W depend=afterok:$cufflinks_job -V -q default
 
 done < $COMMANDS/$DIFFEXP_COMMANDS

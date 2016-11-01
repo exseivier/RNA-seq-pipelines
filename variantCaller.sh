@@ -31,6 +31,7 @@ else
 	DEPENDENCY="-W depend=afterok:${job}"
 fi
 # Processing files
+hisat2_job=""
 if [ "$ARE_READS_MAPPED" == "no" ]; then
 
 while IFS='' read -r LINE || [[ -n "$LINE" ]];
@@ -64,7 +65,6 @@ echo "Name $SAMFILE_NAME; reads forward $READS_F; reads reverse $READS_R"
 DEBUG
 ###########################################################################
 
-hisat2_job=""
 tjob=$(echo "
 # Set working directory to HOME
 cd $PRWD
@@ -103,6 +103,11 @@ fi
 #          &          #
 #   Variant Calling   #
 #######################
+if [ "$hisat2_job" == "" ]; then
+	DEPENDENCY=""
+else
+	DEPENDENCY="-W depend=afterok:$hisat2_job"
+fi
 
 cd $PRWD
 [ $VCF_OUT ] || export VCF_OUT="vcf_out"
@@ -127,7 +132,7 @@ $FILES \
 bcftools call -O z -m -A -v $PRWD/$VCF_OUT/${NAME}.bcf \
 $SNPVC_OP_PARAM \
 -o $PRWD/$VCF_OUT/${NAME}_VC.vcf.gz" | \
-qsub -N $NAME -l nodes=1:ppn=8,vmem=10gb,mem=10gb -W depend=afterok:$hisat2_job -V -q default
+qsub -N $NAME -l nodes=1:ppn=8,vmem=10gb,mem=10gb $DEPENDENCY -V -q default
 
 done < $PRWD/$COMMANDS/$VCF_COMMANDS
 
